@@ -158,12 +158,6 @@ function love.update(dt)
         
     end
 
-    -- update text "abcd"
-   
-    for i, char in ipairs(text) do
-      --  char.current_frame = string.byte(letter) - string.byte('a') + 1
-        char.last_update = now
-    end
 
     -- Update rocks
     for _, rock in ipairs(rocks) do
