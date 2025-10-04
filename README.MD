@@ -1,7 +1,7 @@
 # FsPACE
 
 
-https://youtu.be/lNpLggrli0Y
+[![watch](https://github.com/dirtslayer/fspace/blob/main/2025-10-04_12-41.png?raw=true)](https://youtu.be/lNpLggrli0Y)
 
 This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 
