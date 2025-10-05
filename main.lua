@@ -35,9 +35,10 @@ local prideColors = {
   {0.5019, 0.0000, 0.5019}  -- Violet
 }
 
-
 function love.load()
-    
+    love.window.setMode(1, 2)
+    love.window.setMode(400, 600, {resizable=true, vsync=1, minwidth=200, minheight=300})
+    love.window.setTitle("fspace")
     local x, y = 101, 101
     ship = Ship.new(x, y, 0)
     thrust = Thrust.new(x, y, 0)
@@ -475,6 +476,31 @@ function love.draw()
    
     for _, char in ipairs(text) do
         char:draw(char.current_frame)
+    end
+
+    -- Check mines for overlapping edges and draw at wrapped positions
+    for _, mine in ipairs(mines) do 
+        local overlap = mine:is_overlapping(screen_w, screen_h)
+        if overlap.left then
+            mine.x = mine.x + screen_w
+            mine:draw()
+            mine.x = mine.x - screen_w
+        end 
+        if overlap.right then
+            mine.x = mine.x - screen_w
+            mine:draw()
+            mine.x = mine.x + screen_w
+        end
+        if overlap.top then
+            mine.y = mine.y + screen_h
+            mine:draw()
+            mine.y = mine.y - screen_h
+        end
+        if overlap.bottom then
+            mine.y = mine.y - screen_h
+            mine:draw()
+            mine.y = mine.y + screen_h
+        end
     end
 
 

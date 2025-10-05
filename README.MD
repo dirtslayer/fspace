@@ -5,6 +5,11 @@
 
 This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 
+## todo
+
+- deploy to android
+- 
+
 ## Feature Suggestions
 - present drops that provide weapons upgrade
 - ship damage with damage shown by ship animation and or health bar
