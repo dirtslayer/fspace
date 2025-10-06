@@ -8,7 +8,7 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 ## todo
 
 - deploy to android
-- 
+- clean up rock size magic number and remove degrade if min rock size already 
 
 ## Feature Suggestions
 - present drops that provide weapons upgrade
