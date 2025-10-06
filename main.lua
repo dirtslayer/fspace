@@ -315,8 +315,12 @@ function love.update(dt)
                             newrock.dy = rock.dy * -1
                             newrock.dr = rock.dr * -1
                             newrock.dx = rock.dx * -1
-                            newrock.scale = rock.scale * 0.7
-                            rock.scale = newrock.scale
+                            -- only scale rock if scale is greater than 0.2
+                            if rock.scale > 0.2 then
+                                newrock.scale = rock.scale * 0.7
+                            else
+                                newrock.scale = rock.scale
+                            end
                             table.insert(rocks, newrock)
                         end
                     end  
