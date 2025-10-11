@@ -25,6 +25,13 @@ local text = {
     
 }
 
+local button_rects = {
+    {20,77, 100,46},
+    {20,137, 100,46}
+}
+
+local selected_button = 1
+
 local Colors = require("colors")
 local colors = Colors:new()
 local prideColors = colors:get_pride_colors()
@@ -59,8 +66,10 @@ end
 function Menu:draw()
     -- Draw rectangle behind play and quit 
     love.graphics.setColor(1.0, 1.0, 1.0, 0.5)
-    --love.graphics.rectangle("fill", 10, 65, love.graphics.getWidth()-10, 105)
-    love.graphics.rectangle("fill", 20,77, 100,46)
+    
+    -- Draw rectangle for selected button using unpack
+    love.graphics.rectangle("fill", unpack(button_rects[selected_button]))
+    
     for _, char in ipairs(text) do  
         char:draw(char.current_frame)
     end
@@ -68,13 +77,63 @@ end
 
 function Menu:keypressed(key)
 
+    if key == "q" then
+        love.event.quit()
+    end
+
     if key == "f" then
         self.setScene("fspace")
     end
+
+    -- if up arrow move to previous, if at 1 set to #button_rects
+    if key == "up" then
+        if selected_button == 1 then
+            selected_button = #button_rects
+        else
+            selected_button = selected_button - 1
+        end
+    end
+    
+    -- if down arrow move to next, if at #button_rects, then set to 1
+    if key == "down" then
+        if selected_button == #button_rects then
+            selected_button = 1
+        else
+            selected_button = selected_button + 1
+        end
+    end
+
+    if key == "return" then
+        if selected_button == 1 then
+            self.setScene("fspace")
+        else 
+            if selected_button == 2 then
+                love.event.quit()
+            end
+        end
+    end
+
 end
 
 function Menu:mousemoved(x, y, dx, dy, istouch)
-    -- Handle mouse movement
+    -- Check if mouse is over any button rectangle
+    for i, rect in ipairs(button_rects) do
+        local rect_x, rect_y, rect_w, rect_h = unpack(rect)
+        if x >= rect_x and x <= rect_x + rect_w and y >= rect_y and y <= rect_y + rect_h then
+            selected_button = i
+            break
+        end
+    end
+end
+
+function Menu:mousepressed( x, y, button, istouch, presses )
+    if selected_button == 1 then
+        self.setScene("fspace")
+    else 
+        if selected_button == 2 then
+            love.event.quit()
+        end
+    end
 end
 
 return Menu

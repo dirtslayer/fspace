@@ -32,10 +32,6 @@ function love.load()
 
 end
 
---function love.mousepressed( x, y, button, istouch, presses )
---    scenery:mousepressed(x, y, button, istouch, presses)
---end
-
 function love.update(dt)
     scenery:update(dt)
 end
@@ -51,4 +47,8 @@ end
 
 function love.mousemoved(x, y, dx, dy, istouch)
     scenery:mousemoved(x, y, dx, dy, istouch)   
+end
+
+function love.mousepressed(x, y, dx, dy, istouch)
+    scenery:mousepressed(x, y, dx, dy, istouch)   
 end
