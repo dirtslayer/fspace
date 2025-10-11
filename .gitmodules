@@ -1,0 +1,3 @@
+[submodule "scenery"]
+	path = scenery
+	url = https://github.com/paltze/scenery.git
