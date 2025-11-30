@@ -42,7 +42,10 @@ end
 
 function love.keypressed(key)
     scenery:keypressed(key)
-    
+if key == "tab" then
+      local state = not love.mouse.isGrabbed()   -- the opposite of whatever it currently is
+      love.mouse.setGrabbed(state)
+   end    
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)

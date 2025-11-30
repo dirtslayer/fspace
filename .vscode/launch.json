@@ -10,7 +10,7 @@
             "request": "launch",
             "name": "Debug Love",
             "program": {
-                "command": "/usr/bin/love"
+                "command": "/home/dd/.local/bin/love"
             },
             "args": [ "${workspaceFolder} "]
         }
