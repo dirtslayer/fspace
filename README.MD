@@ -30,6 +30,11 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 
 0. install love2d
 1. get the fspace code from github repository
+```
+
+git clone --recurse-submodules  https://github.com/dirtslayer/fspace.git
+
+```
 2. change into the fspace code folder 
 3. verify contents of folder
 
