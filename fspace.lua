@@ -99,15 +99,73 @@ function Fspace:load()
 
 
 function fire_bullet()
-    -- Find tip of ship in world coordinates
-    local rad = math.rad(ship.angle + 90)
-    local tip_x = ship.x   + math.cos(rad) * 30 * ship.scale
-    local tip_y = ship.y  + math.sin(rad) * 30 * ship.scale
-    local bullet = Bullet.new(tip_x, tip_y, ship.angle)
-    local speed = 10
-    bullet.dx = math.cos(rad) * speed
-    bullet.dy = math.sin(rad) * speed
-    table.insert(bullets, bullet)
+    local distance_from_origin = 30
+
+    if ship.weapon_level == 0 then
+        -- Find tip of ship in world coordinates
+        local rad = math.rad(ship.angle + 90)
+        local tip_x = ship.x   + math.cos(rad) * distance_from_origin * ship.scale
+        local tip_y = ship.y  + math.sin(rad) * distance_from_origin * ship.scale
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local speed = 10
+        bullet.dx = math.cos(rad) * speed
+        bullet.dy = math.sin(rad) * speed
+        table.insert(bullets, bullet)
+       
+    elseif ship.weapon_level == 1 then
+        local rad = math.rad(ship.angle + 90)
+        local forward_x = math.cos(rad)
+        local forward_y = math.sin(rad)
+        local perp_x = -math.sin(rad)
+        local perp_y = math.cos(rad)
+        local offset = 2
+        local tip_x = ship.x + forward_x * distance_from_origin * ship.scale + perp_x * offset
+        local tip_y = ship.y + forward_y * distance_from_origin * ship.scale + perp_y * offset
+        local tip_x2 = ship.x + forward_x * distance_from_origin * ship.scale - perp_x * offset
+        local tip_y2 = ship.y + forward_y * distance_from_origin * ship.scale - perp_y * offset
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local bullet2 = Bullet.new(tip_x2, tip_y2, ship.angle)
+        local speed = 10
+        bullet.color = {1, 0, 0} -- red bullet for level 1
+        bullet.dx = forward_x * speed
+        bullet.dy = forward_y * speed
+        bullet2.color = {1, 0, 0} -- red bullet for level 1
+        bullet2.dx = forward_x * speed
+        bullet2.dy = forward_y * speed
+        table.insert(bullets, bullet)
+        table.insert(bullets, bullet2)
+
+    elseif ship.weapon_level == 2 then
+        local rad = math.rad(ship.angle + 90)
+        local forward_x = math.cos(rad)
+        local forward_y = math.sin(rad)
+        local perp_x = -math.sin(rad)
+        local perp_y = math.cos(rad)
+        local offset = 3
+        local tip_x = ship.x + forward_x * distance_from_origin * ship.scale - perp_x * offset
+        local tip_y = ship.y + forward_y * distance_from_origin * ship.scale - perp_y * offset
+        local tip_x2 = ship.x + forward_x * distance_from_origin * ship.scale
+        local tip_y2 = ship.y + forward_y * distance_from_origin * ship.scale
+        local tip_x3 = ship.x + forward_x * distance_from_origin * ship.scale + perp_x * offset
+        local tip_y3 = ship.y + forward_y * distance_from_origin * ship.scale + perp_y * offset
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local bullet2 = Bullet.new(tip_x2, tip_y2, ship.angle)
+        local bullet3 = Bullet.new(tip_x3, tip_y3, ship.angle)
+        local speed = 10
+        bullet.color = {0.5, 0, 1.0} -- purple 
+        bullet.dx = forward_x * speed
+        bullet.dy = forward_y * speed
+        bullet2.color = {0.5, 0, 1.0} -- purple 
+        bullet2.dx = forward_x * speed
+        bullet2.dy = forward_y * speed
+        bullet3.color = {0.5, 0, 1.0} -- purple 
+        bullet3.dx = forward_x * speed
+        bullet3.dy = forward_y * speed
+        table.insert(bullets, bullet)
+        table.insert(bullets, bullet2)
+        table.insert(bullets, bullet3)
+    end
+    
 end
 
 function Fspace:update_color_animations(now)
@@ -545,8 +603,8 @@ function Fspace:collide_ship_with_boxes()
                     -- destroy box on collision and decrease ship life
                     table.remove(boxes, i)
                     ship.box_collision_time = love.timer.getTime()
-                    ship.life = ship.life - 10
-                    if ship.life < 0 then ship.life = 0 end
+                    ship.weapon_level = ( ship.weapon_level + 1 ) % ( ship.max_weapon_level + 1 )
+                    print("Weapon level increased to ", ship.weapon_level)
                 end
             end
         end
