@@ -13,7 +13,7 @@ function Box.new(x, y, angle)
         {-1, 1},
     }
     self.color = {0, 0, 1} -- blue
-    self.scale = 20
+    self.scale = 6
     self.collision_time = 0
     self.spawn_time = love.timer.getTime()
     return self

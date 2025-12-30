@@ -19,6 +19,9 @@ local mines = {}
 local Box = require("box")
 local boxes = {}
 
+local Alienship = require("alienship")
+local alienship
+
 local Alien = require("alien")
 local alien
                     
@@ -80,10 +83,12 @@ function Fspace:load()
     light = Light.new(x + 100, y + 100, 0)
     light.current_frame = 1
 
-    -- Create an alien NPC at screen center (stationary for now)
+    -- Create an alienship NPC at screen center (stationary for now)
     do
         local screen_w, screen_h = love.graphics.getWidth(), love.graphics.getHeight()
-        alien = Alien.new(screen_w / 2, screen_h / 2, 0)
+        alienship = Alienship.new(screen_w / 2, screen_h / 2, 0)
+        -- Also create the new `Alien` sprite and place it at the same position as the alienship
+        alien = Alien.new(alienship.x, alienship.y, alienship.angle)
     end
 
     score_display = {Digit.new(60, 50, 0), Digit.new(40, 50, 0), Digit.new(20, 50, 0)}
@@ -395,6 +400,13 @@ function Fspace:sync_visual_sprites()
     light.x = ship.x
     light.y = ship.y
     light.angle = ship.angle
+
+    -- Keep alien aligned with the alienship (if both exist)
+    if alienship and alien then
+        alien.x = alienship.x
+        alien.y = alienship.y
+        alien.angle = alienship.angle
+    end
 end
 
 function Fspace:update_bullet_firing()
@@ -818,7 +830,12 @@ function Fspace:draw()
     -- Draw ship and thrust at main position
     ship:draw()
 
-    -- Draw stationary alien NPC at screen center
+    -- Draw stationary alienship NPC at screen center
+    if alienship then
+        alienship:draw()
+    end
+
+    -- Draw the new `Alien` sprite (stationary)
     if alien then
         alien:draw()
     end
