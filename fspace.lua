@@ -15,6 +15,9 @@ local rocks = {}
 
 local Mine = require("mine")
 local mines = {}
+
+local Box = require("box")
+local boxes = {}
                     
 Light = require("light")
 local light
@@ -456,6 +459,12 @@ function Fspace:collide_bullets_with_rocks()
                     table.insert(mines, mine)
                 end
 
+                -- Optionally spawn a box (same frequency as mines)
+                if #boxes < 20 and math.random() < 0.05 then
+                    local box = Box.new(rock.x, rock.y, rock.angle)
+                    table.insert(boxes, box)
+                end
+
                 -- Optionally spawn smaller rocks
                 if rock.scale > 0.2 and #rocks < rock_number_collision_threshold then         
                     for i = 1, 2 do
@@ -492,6 +501,75 @@ function Fspace:collide_bullets_with_mines()
                 -- Bullet hit mine: remove both
                 table.remove(bullets, bi)
                 table.remove(mines, mi)
+                break
+            end
+        end
+    end
+end
+
+function Fspace:collide_ship_with_boxes()
+    if #boxes > 20 then
+        return
+    end
+
+    if ship.box_collision_time and love.timer.getTime() - ship.box_collision_time < 0.5 then
+        ship.color = {1, 0.5, 0.5} -- flash ship light red after box collision
+    else
+        ship.color = {0, 1, 1} -- normal cyan color
+    end
+
+    -- collision detection ship and boxes (AABB)    
+    local ship_min_x, ship_min_y, ship_max_x, ship_max_y = ship:get_bound_rect()
+    ship_min_x = ship_min_x + ship.x
+    ship_min_y = ship_min_y + ship.y
+    ship_max_x = ship_max_x + ship.x
+    ship_max_y = ship_max_y + ship.y
+
+    for i, b in ipairs(boxes or {}) do
+        -- Skip collision detection for 1.5 second after spawn
+        if b.spawn_time and love.timer.getTime() - b.spawn_time < 1.5 then
+            b.color = {0.7, 0.7, 1.0} -- light blue to indicate recent spawn   
+        else
+            if b.collision_time > 0 and love.timer.getTime() - b.collision_time < 1 then
+                b.color = {1, 0, 0} -- red to indicate recent collision
+            else
+                b.color = {0.2, 0.2, 1.0} -- normal blue color
+                local box_min_x, box_min_y, box_max_x, box_max_y = b:get_bound_rect()
+                box_min_x = box_min_x + b.x
+                box_min_y = box_min_y + b.y
+                box_max_x = box_max_x + b.x
+                box_max_y = box_max_y + b.y
+                
+                if not (ship_max_x < box_min_x or ship_min_x > box_max_x or ship_max_y < box_min_y or ship_min_y > box_max_y) then
+                    b.collision_time = love.timer.getTime()
+                    -- destroy box on collision and decrease ship life
+                    table.remove(boxes, i)
+                    ship.box_collision_time = love.timer.getTime()
+                    ship.life = ship.life - 10
+                    if ship.life < 0 then ship.life = 0 end
+                end
+            end
+        end
+    end    
+end
+
+function Fspace:collide_bullets_with_boxes()
+    -- collision detection bullets and boxes (AABB)
+    for bi = #boxes, 1, -1 do
+        local box = boxes[bi]
+        for bii = #bullets, 1, -1 do
+            local bullet = bullets[bii]
+            local bx, by = bullet.x, bullet.y
+            local box_min_x, box_min_y, box_max_x, box_max_y = box:get_bound_rect()
+            box_min_x = box_min_x + box.x
+            box_min_y = box_min_y + box.y
+            box_max_x = box_max_x + box.x
+            box_max_y = box_max_y + box.y
+            
+            if bx >= box_min_x and bx <= box_max_x and by >= box_min_y and by <= box_max_y then
+                -- Bullet hit box: remove both
+                table.remove(bullets, bii)
+                table.remove(boxes, bi)
                 break
             end
         end
@@ -557,8 +635,10 @@ function Fspace:update(dt)
     elseif current_update_category == UPDATE_CATEGORIES.COLLISION then
         self:collide_ship_with_rocks()
         self:collide_ship_with_mines()
+        self:collide_ship_with_boxes()
         self:collide_bullets_with_rocks()
         self:collide_bullets_with_mines()
+        self:collide_bullets_with_boxes()
     
     -- SPIN_SCHEDULE: SPAWNING
     elseif current_update_category == UPDATE_CATEGORIES.SPAWNING then
@@ -582,6 +662,11 @@ function Fspace:draw()
     -- Draw mines
     for _, m in ipairs(mines or {}) do
         m:draw()
+    end
+
+    -- Draw boxes
+    for _, b in ipairs(boxes or {}) do
+        b:draw()
     end
 
     -- Draw bullets
@@ -639,6 +724,31 @@ function Fspace:draw()
             mine.y = mine.y - screen_h
             mine:draw()
             mine.y = mine.y + screen_h
+        end
+    end
+
+    -- Check boxes for overlapping edges and draw at wrapped positions
+    for _, box in ipairs(boxes) do 
+        local overlap = box:is_overlapping(screen_w, screen_h)
+        if overlap.left then
+            box.x = box.x + screen_w
+            box:draw()
+            box.x = box.x - screen_w
+        end 
+        if overlap.right then
+            box.x = box.x - screen_w
+            box:draw()
+            box.x = box.x + screen_w
+        end
+        if overlap.top then
+            box.y = box.y + screen_h
+            box:draw()
+            box.y = box.y - screen_h
+        end
+        if overlap.bottom then
+            box.y = box.y - screen_h
+            box:draw()
+            box.y = box.y + screen_h
         end
     end
 
