@@ -6,8 +6,9 @@ function Ship.new(x, y, angle)
     local self = setmetatable(LineSprite.new(x, y, angle), Ship)
     self.color = {0, 1, 1} -- cyan
     self.life = 100  -- Player life (decreases on mine collision)
-    self.weapon_level = 0
-    self.max_weapon_level = 2
+    self.weapon_level = 2
+    self.max_weapon_level = 3
+    self.scale = 0.4
     
     -- Ship-specific points
     local halfPoints = {
