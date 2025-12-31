@@ -11,17 +11,23 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 - clean up rock size magic number and remove degrade if min rock size already 
 
 ## Feature Suggestions
-- present drops that provide weapons upgrade
+- [x] present drops that provide weapons upgrade
+- rotational thrust (using thrusters to turn)
 - ship damage with damage shown by ship animation and or health bar
 - bomb weapon which is slower, does nothing until explodes then has radius damage
-- score tracking amount of rocks / mines destroyed
+- score tracking amount of rocks / mines destroyed, high score
+- help screen
+- customize keys screen
+- controller support
 - better hit box polygons / collection of boxes 
 - controls for handheld / touch 
 - more animations
 - bouncy walls
 - sound
 - screensaver / autopilot mode
-- npcs
+- more npcs (rocks are an npc)
+- waves or stages
+
 - multiplayer
 
 ## github comments, suggestions and pr's welcome
@@ -32,10 +38,6 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 1. get the fspace code from github repository
 2. change into the fspace code folder 
 3. verify contents of folder
-
-.vscode    │ char.lua  │ line_sprite.lua │ rock.lua
-README.MD  │ digit.lua │ main.lua        │ ship.lua
-bullet.lua │ light.lua │ mine.lua        │ thrust.lua
 
 4. run main.lua from the command line by typing: love .
 5. f for fire bullet, space for engage thruster (or mouse left and right buttons)
