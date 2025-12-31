@@ -25,7 +25,7 @@ local scenery = SceneryInit(
 
 function love.load()
     love.window.setMode(1, 2)
-    love.window.setMode(400, 600, {resizable=true, vsync=1, minwidth=200, minheight=300})
+    love.window.setMode(800, 800, {resizable=true, vsync=1, minwidth=200, minheight=300})
     love.window.setTitle("fspace")
 
     scenery:load()

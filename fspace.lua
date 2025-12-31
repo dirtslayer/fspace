@@ -15,6 +15,15 @@ local rocks = {}
 
 local Mine = require("mine")
 local mines = {}
+
+local Box = require("box")
+local boxes = {}
+
+local Alienship = require("alienship")
+local alienship
+
+local Alien = require("alien")
+local alien
                     
 Light = require("light")
 local light
@@ -70,41 +79,177 @@ function Fspace:load()
     rock.scale = 3.0
     table.insert(rocks, rock)
 
-        -- Create a global light
-        light = Light.new(x + 100, y + 100, 0)
-        light.current_frame = 1
+    -- Create a global light
+    light = Light.new(x + 100, y + 100, 0)
+    light.current_frame = 1
 
-        score_display = {
-            Digit.new(60, 50, 0),
-            Digit.new(40, 50, 0),
-            Digit.new(20, 50, 0),
-        }
-
-        -- Create `fspace` title using helper
-        fspace_text = chartext("fspace", 10, 10, 0, 20)
-
-        -- Create `game over` text, centered on screen
-        do
-            local screen_w, screen_h = love.graphics.getWidth(), love.graphics.getHeight()
-            local msg = "GAME OVER"
-            local spacing = 20
-            local start_x = (screen_w - #msg * spacing) / 2
-            gameover_text = chartext(msg, start_x, screen_h / 2 - 20, 0, spacing)
-        end
-
+    -- Create an alienship NPC at screen center (stationary for now)
+    do
+        local screen_w, screen_h = love.graphics.getWidth(), love.graphics.getHeight()
+        alienship = Alienship.new(screen_w / 2, screen_h / 2, 0)
+        -- Also create the new `Alien` sprite and place it at the same position as the alienship
+        alien = Alien.new(alienship.x, alienship.y, alienship.angle)
     end
 
+    score_display = {Digit.new(60, 50, 0), Digit.new(40, 50, 0), Digit.new(20, 50, 0)}
 
-function fire_bullet()
-    -- Find tip of ship in world coordinates
-    local rad = math.rad(ship.angle + 90)
-    local tip_x = ship.x   + math.cos(rad) * 30 * ship.scale
-    local tip_y = ship.y  + math.sin(rad) * 30 * ship.scale
-    local bullet = Bullet.new(tip_x, tip_y, ship.angle)
-    local speed = 10
-    bullet.dx = math.cos(rad) * speed
-    bullet.dy = math.sin(rad) * speed
-    table.insert(bullets, bullet)
+    -- Create `fspace` title using helper
+    fspace_text = Fspace:chartext("fspace", 10, 10, 0, 20)
+
+    -- Create `game over` text, centered on screen
+    do
+        local screen_w, screen_h = love.graphics.getWidth(), love.graphics.getHeight()
+        local msg = "GAME OVER"
+        local spacing = 20
+        local start_x = (screen_w - #msg * spacing) / 2
+        gameover_text = Fspace:chartext(msg, start_x, screen_h / 2 - 20, 0, spacing)
+    end
+
+end
+
+function Fspace:fire_bullet()
+    local distance_from_origin = 30
+
+    if ship.weapon_level == 0 then
+        -- Find tip of ship in world coordinates
+        local rad = math.rad(ship.angle + 90)
+        local tip_x = ship.x   + math.cos(rad) * distance_from_origin * ship.scale
+        local tip_y = ship.y  + math.sin(rad) * distance_from_origin * ship.scale
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local speed = 10
+        bullet.dx = math.cos(rad) * speed
+        bullet.dy = math.sin(rad) * speed
+        table.insert(bullets, bullet)
+       
+    elseif ship.weapon_level == 1 then
+        local rad = math.rad(ship.angle + 90)
+        local forward_x = math.cos(rad)
+        local forward_y = math.sin(rad)
+        local perp_x = -math.sin(rad)
+        local perp_y = math.cos(rad)
+        local offset = 2
+        local tip_x = ship.x + forward_x * distance_from_origin * ship.scale + perp_x * offset
+        local tip_y = ship.y + forward_y * distance_from_origin * ship.scale + perp_y * offset
+        local tip_x2 = ship.x + forward_x * distance_from_origin * ship.scale - perp_x * offset
+        local tip_y2 = ship.y + forward_y * distance_from_origin * ship.scale - perp_y * offset
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local bullet2 = Bullet.new(tip_x2, tip_y2, ship.angle)
+        local speed = 10
+        bullet.color = {1, 0, 0} -- red bullet for level 1
+        bullet.dx = forward_x * speed
+        bullet.dy = forward_y * speed
+        bullet2.color = {1, 0, 0} -- red bullet for level 1
+        bullet2.dx = forward_x * speed
+        bullet2.dy = forward_y * speed
+        table.insert(bullets, bullet)
+        table.insert(bullets, bullet2)
+
+    elseif ship.weapon_level == 2 then
+        local rad = math.rad(ship.angle + 90)
+        local forward_x = math.cos(rad)
+        local forward_y = math.sin(rad)
+        local perp_x = -math.sin(rad)
+        local perp_y = math.cos(rad)
+        local offset = 3
+        local tip_x = ship.x + forward_x * distance_from_origin * ship.scale - perp_x * offset
+        local tip_y = ship.y + forward_y * distance_from_origin * ship.scale - perp_y * offset
+        local tip_x2 = ship.x + forward_x * distance_from_origin * ship.scale
+        local tip_y2 = ship.y + forward_y * distance_from_origin * ship.scale
+        local tip_x3 = ship.x + forward_x * distance_from_origin * ship.scale + perp_x * offset
+        local tip_y3 = ship.y + forward_y * distance_from_origin * ship.scale + perp_y * offset
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local bullet2 = Bullet.new(tip_x2, tip_y2, ship.angle)
+        local bullet3 = Bullet.new(tip_x3, tip_y3, ship.angle)
+        local speed = 10
+        bullet.color = {0.5, 0, 1.0} -- purple 
+        bullet.dx = forward_x * speed
+        bullet.dy = forward_y * speed
+        bullet2.color = {0.5, 0, 1.0} -- purple 
+        bullet2.dx = forward_x * speed
+        bullet2.dy = forward_y * speed
+        bullet3.color = {0.5, 0, 1.0} -- purple 
+        bullet3.dx = forward_x * speed
+        bullet3.dy = forward_y * speed
+        table.insert(bullets, bullet)
+        table.insert(bullets, bullet2)
+        table.insert(bullets, bullet3)
+    elseif ship.weapon_level == 3 then
+        local rad = math.rad(ship.angle + 90)
+        local forward_x = math.cos(rad)
+        local forward_y = math.sin(rad)
+        local perp_x = -math.sin(rad)
+        local perp_y = math.cos(rad)
+        local offset = 3
+        local tip_x = ship.x + forward_x * distance_from_origin * ship.scale - perp_x * offset
+        local tip_y = ship.y + forward_y * distance_from_origin * ship.scale - perp_y * offset
+        local tip_x2 = ship.x + forward_x * distance_from_origin * ship.scale
+        local tip_y2 = ship.y + forward_y * distance_from_origin * ship.scale
+        local tip_x3 = ship.x + forward_x * distance_from_origin * ship.scale + perp_x * offset
+        local tip_y3 = ship.y + forward_y * distance_from_origin * ship.scale + perp_y * offset
+        local bullet = Bullet.new(tip_x, tip_y, ship.angle)
+        local bullet2 = Bullet.new(tip_x2, tip_y2, ship.angle)
+        local bullet3 = Bullet.new(tip_x3, tip_y3, ship.angle)
+        local bullet4 = Bullet.new(tip_x2, tip_y3, ship.angle + 15)
+        local bullet5 = Bullet.new(tip_x2, tip_y3, ship.angle - 15)
+        local speed = 10
+        bullet.color = {0.5, 0, 1.0} -- purple 
+        bullet.dx = forward_x * speed
+        bullet.dy = forward_y * speed
+        bullet2.color = {0.5, 0, 1.0} -- purple 
+        bullet2.dx = forward_x * speed
+        bullet2.dy = forward_y * speed
+        bullet3.color = {0.5, 0, 1.0} -- purple 
+        bullet3.dx = forward_x * speed
+        bullet3.dy = forward_y * speed
+        bullet4.color = {1.0, 0.5, 0} -- orange
+        bullet4.dx = math.cos(math.rad(ship.angle + 90 + 15)) * speed
+        bullet4.dy = math.sin(math.rad(ship.angle + 90 + 15)) * speed
+        bullet5.color = {1.0, 0.5, 0} -- orange
+        bullet5.dx = math.cos(math.rad(ship.angle + 90 - 15)) * speed
+        bullet5.dy = math.sin(math.rad(ship.angle + 90 - 15)) * speed
+        table.insert(bullets, bullet)
+        table.insert(bullets, bullet2)
+        table.insert(bullets, bullet3)
+        table.insert(bullets, bullet4)
+        table.insert(bullets, bullet5)
+    end
+    
+end
+
+-- Apply a linear and rotational nudge to a rock. Uses internal constants
+-- (LINEAR_SCALE, ROTATION_SCALE, LEVER_ARM_DEFAULT) that can be
+-- parameterized later.
+function Fspace:nudge_rock(rock, fx, fy, contact_x, contact_y)
+    local LINEAR_SCALE = 1.0
+    local ROTATION_SCALE = 0.05
+    local LEVER_ARM_DEFAULT = 5
+
+    -- Apply linear impulse
+    rock.dx = (rock.dx or 0) + fx * LINEAR_SCALE
+    rock.dy = (rock.dy or 0) + fy * LINEAR_SCALE
+
+    -- Compute lever arm from rock center to contact point (if provided)
+    local rx, ry
+    if contact_x and contact_y then
+        rx = contact_x - rock.x
+        ry = contact_y - rock.y
+    else
+        local mag = math.sqrt((fx or 0)^2 + (fy or 0)^2)
+        if mag > 0 then
+            rx = -fy / mag * LEVER_ARM_DEFAULT
+            ry = fx / mag * LEVER_ARM_DEFAULT
+        else
+            rx = LEVER_ARM_DEFAULT
+            ry = 0
+        end
+    end
+
+    -- Torque = r x F (scalar in 2D)
+    local torque = rx * fy - ry * fx
+    rock.dr = (rock.dr or 0) + torque * ROTATION_SCALE
+
+    -- Mark collision time for visual feedback
+    rock.collision_time = love.timer.getTime()
 end
 
 function Fspace:update_color_animations(now)
@@ -148,7 +293,7 @@ function Fspace:update_score_display(now)
     end
 end
 
-function chartext(str, start_x, y, angle, spacing)
+function  Fspace:chartext(str, start_x, y, angle, spacing)
     -- Build an array of `Char` objects for `str` starting at `start_x`,`y`.
     start_x = start_x or 10
     y = y or 10
@@ -255,12 +400,19 @@ function Fspace:sync_visual_sprites()
     light.x = ship.x
     light.y = ship.y
     light.angle = ship.angle
+
+    -- Keep alien aligned with the alienship (if both exist)
+    if alienship and alien then
+        alien.x = alienship.x
+        alien.y = alienship.y
+        alien.angle = alienship.angle
+    end
 end
 
 function Fspace:update_bullet_firing()
     -- Fire bullet on right mouse, ctrl, alt, or f
     if love.mouse.isDown(2) or love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl") or love.keyboard.isDown("lalt") or love.keyboard.isDown("ralt") or love.keyboard.isDown("f") then
-        fire_bullet()
+        Fspace:fire_bullet()
         bullet_fired = true
     else
         bullet_fired = false
@@ -331,8 +483,9 @@ function Fspace:collide_ship_with_rocks()
                             local impulse_y = impulse * normal_y
                             ship.dx = (ship.dx or 0) - impulse_x
                             ship.dy = (ship.dy or 0) - impulse_y
-                            rock.dx = (rock.dx or 0) + impulse_x
-                            rock.dy = (rock.dy or 0) + impulse_y
+                            -- Apply the same impulse to the rock using nudge_rock so the
+                            -- translational and rotational effects are encapsulated.
+                            Fspace:nudge_rock(rock, impulse_x, impulse_y, ship.x, ship.y)
                         end
                     end     
                 end  
@@ -456,6 +609,12 @@ function Fspace:collide_bullets_with_rocks()
                     table.insert(mines, mine)
                 end
 
+                -- Optionally spawn a box (same frequency as mines)
+                if #boxes < 20 and math.random() < 0.05 then
+                    local box = Box.new(rock.x, rock.y, rock.angle)
+                    table.insert(boxes, box)
+                end
+
                 -- Optionally spawn smaller rocks
                 if rock.scale > 0.2 and #rocks < rock_number_collision_threshold then         
                     for i = 1, 2 do
@@ -492,6 +651,75 @@ function Fspace:collide_bullets_with_mines()
                 -- Bullet hit mine: remove both
                 table.remove(bullets, bi)
                 table.remove(mines, mi)
+                break
+            end
+        end
+    end
+end
+
+function Fspace:collide_ship_with_boxes()
+    if #boxes > 20 then
+        return
+    end
+
+    if ship.box_collision_time and love.timer.getTime() - ship.box_collision_time < 0.5 then
+        ship.color = {1, 0.5, 0.5} -- flash ship light red after box collision
+    else
+        ship.color = {0, 1, 1} -- normal cyan color
+    end
+
+    -- collision detection ship and boxes (AABB)    
+    local ship_min_x, ship_min_y, ship_max_x, ship_max_y = ship:get_bound_rect()
+    ship_min_x = ship_min_x + ship.x
+    ship_min_y = ship_min_y + ship.y
+    ship_max_x = ship_max_x + ship.x
+    ship_max_y = ship_max_y + ship.y
+
+    for i, b in ipairs(boxes or {}) do
+        -- Skip collision detection for 1.5 second after spawn
+        if b.spawn_time and love.timer.getTime() - b.spawn_time < 1.5 then
+            b.color = {0.7, 0.7, 1.0} -- light blue to indicate recent spawn   
+        else
+            if b.collision_time > 0 and love.timer.getTime() - b.collision_time < 1 then
+                b.color = {1, 0, 0} -- red to indicate recent collision
+            else
+                b.color = {0.2, 0.2, 1.0} -- normal blue color
+                local box_min_x, box_min_y, box_max_x, box_max_y = b:get_bound_rect()
+                box_min_x = box_min_x + b.x
+                box_min_y = box_min_y + b.y
+                box_max_x = box_max_x + b.x
+                box_max_y = box_max_y + b.y
+                
+                if not (ship_max_x < box_min_x or ship_min_x > box_max_x or ship_max_y < box_min_y or ship_min_y > box_max_y) then
+                    b.collision_time = love.timer.getTime()
+                    -- destroy box on collision and decrease ship life
+                    table.remove(boxes, i)
+                    ship.box_collision_time = love.timer.getTime()
+                    ship.weapon_level = ( ship.weapon_level + 1 ) % ( ship.max_weapon_level + 1 )
+                    print("Weapon level increased to ", ship.weapon_level)
+                end
+            end
+        end
+    end    
+end
+
+function Fspace:collide_bullets_with_boxes()
+    -- collision detection bullets and boxes (AABB)
+    for bi = #boxes, 1, -1 do
+        local box = boxes[bi]
+        for bii = #bullets, 1, -1 do
+            local bullet = bullets[bii]
+            local bx, by = bullet.x, bullet.y
+            local box_min_x, box_min_y, box_max_x, box_max_y = box:get_bound_rect()
+            box_min_x = box_min_x + box.x
+            box_min_y = box_min_y + box.y
+            box_max_x = box_max_x + box.x
+            box_max_y = box_max_y + box.y
+            
+            if bx >= box_min_x and bx <= box_max_x and by >= box_min_y and by <= box_max_y then
+                -- Bullet hit box: remove both
+                table.remove(bullets, bii)
+                table.remove(boxes, bi)
                 break
             end
         end
@@ -557,8 +785,10 @@ function Fspace:update(dt)
     elseif current_update_category == UPDATE_CATEGORIES.COLLISION then
         self:collide_ship_with_rocks()
         self:collide_ship_with_mines()
+        self:collide_ship_with_boxes()
         self:collide_bullets_with_rocks()
         self:collide_bullets_with_mines()
+        self:collide_bullets_with_boxes()
     
     -- SPIN_SCHEDULE: SPAWNING
     elseif current_update_category == UPDATE_CATEGORIES.SPAWNING then
@@ -584,6 +814,11 @@ function Fspace:draw()
         m:draw()
     end
 
+    -- Draw boxes
+    for _, b in ipairs(boxes or {}) do
+        b:draw()
+    end
+
     -- Draw bullets
     for _, b in ipairs(bullets) do
         b:draw()
@@ -594,6 +829,17 @@ function Fspace:draw()
     end
     -- Draw ship and thrust at main position
     ship:draw()
+
+    -- Draw stationary alienship NPC at screen center
+    if alienship then
+        alienship:draw()
+    end
+
+    -- Draw the new `Alien` sprite (stationary)
+    if alien then
+        alien:draw()
+    end
+
     if love.keyboard.isDown("space") then
         thrust:draw()
     end
@@ -639,6 +885,31 @@ function Fspace:draw()
             mine.y = mine.y - screen_h
             mine:draw()
             mine.y = mine.y + screen_h
+        end
+    end
+
+    -- Check boxes for overlapping edges and draw at wrapped positions
+    for _, box in ipairs(boxes) do 
+        local overlap = box:is_overlapping(screen_w, screen_h)
+        if overlap.left then
+            box.x = box.x + screen_w
+            box:draw()
+            box.x = box.x - screen_w
+        end 
+        if overlap.right then
+            box.x = box.x - screen_w
+            box:draw()
+            box.x = box.x + screen_w
+        end
+        if overlap.top then
+            box.y = box.y + screen_h
+            box:draw()
+            box.y = box.y - screen_h
+        end
+        if overlap.bottom then
+            box.y = box.y - screen_h
+            box:draw()
+            box.y = box.y + screen_h
         end
     end
 
