@@ -65,7 +65,98 @@ function Fspace:new()
     return self
 end
 
+
+local Notes = {
+    -- Octave 4 (middle)
+    C4   = 261.63,
+    Cs4  = 277.18,  Db4 = 277.18,
+    D4   = 293.66,
+    Ds4  = 311.13,  Eb4 = 311.13,
+    E4   = 329.63,
+    F4   = 349.23,
+    Fs4  = 369.99,  Gb4 = 369.99,
+    G4   = 392.00,
+    Gs4  = 415.30,  Ab4 = 415.30,
+    A4   = 440.00,
+    As4  = 466.16,  Bb4 = 466.16,
+    B4   = 493.88,
+
+    -- Octave 3 (lower)
+    C3   = 130.81,
+    Cs3  = 138.59,  Db3 = 138.59,
+    D3   = 146.83,
+    Ds3  = 155.56,  Eb3 = 155.56,
+    E3   = 164.81,
+    F3   = 174.61,
+    Fs3  = 185.00,  Gb3 = 185.00,
+    G3   = 196.00,
+    Gs3  = 207.65,  Ab3 = 207.65,
+    A3   = 220.00,
+    As3  = 233.08,  Bb3 = 233.08,
+    B3   = 246.94,
+
+    -- Octave 5 (higher)
+    C5   = 523.25,
+    Cs5  = 554.37,  Db5 = 554.37,
+    D5   = 587.33,
+    Ds5  = 622.25,  Eb5 = 622.25,
+    E5   = 659.25,
+    F5   = 698.46,
+    Fs5  = 739.99,  Gb5 = 739.99,
+    G5   = 783.99,
+    Gs5  = 830.61,  Ab5 = 830.61,
+    A5   = 880.00,
+    As5  = 932.33,  Bb5 = 932.33,
+    B5   = 987.77,
+}
+
+
+
+
+-- Generates a sine‑based explosion sound
+-- startFreq: starting frequency in Hz
+-- endFreq: ending frequency in Hz
+-- decayRate: exponential amplitude decay constant
+-- duration: optional, defaults to 0.2 seconds
+function Fspace:generateExplosion(startFreq, endFreq, decayRate, duration)
+    duration = duration or 0.2
+
+    print("endFreq: " .. endFreq)
+    local sampleRate = 44100
+    local sampleCount = duration * sampleRate
+
+    local soundData = love.sound.newSoundData(sampleCount, sampleRate, 16, 1)
+
+    for i = 0, sampleCount - 1 do
+        local t = i / sampleRate
+
+        -- amplitude envelope
+        local amp = math.exp(-t * decayRate)
+
+        -- frequency sweep
+        local freq = startFreq + (endFreq - startFreq) * (t / duration)
+
+        -- sine wave sample
+        local sample = amp * math.sin(2 * math.pi * freq * t)
+
+        soundData:setSample(i, sample)
+    end
+
+    return soundData
+end
+
 function Fspace:load()
+
+    local sd0 = Fspace:generateExplosion(Notes.B3,Notes.F3, 15, .05)
+    explosion_sound = love.audio.newSource(sd0)
+
+    local sd1 = Fspace:generateExplosion(Notes.E4,Notes.E4, 5, .02)
+    pew_sound = love.audio.newSource(sd1)
+
+    local snd2 = Fspace:generateExplosion(Notes.A3, Notes.B3 , 4, 0.4)
+    thrust_sound = love.audio.newSource(snd2)
+
+
     game_state = GAME_STATES.PLAY
     local x, y = 101, 101
     ship = Ship.new(x, y, 0)
@@ -108,6 +199,10 @@ function Fspace:load()
 end
 
 function Fspace:fire_bullet()
+
+    pew_sound:stop()
+    pew_sound:play()
+
     local distance_from_origin = 30
 
     if ship.weapon_level == 0 then
@@ -346,6 +441,9 @@ end
 function Fspace:update_ship_thrust(dt)
     -- Thrust logic: add thrust vector opposite to ship's angle when space is pressed
     if love.keyboard.isDown("space") or love.mouse.isDown(1) then
+
+        thrust_sound:play()
+
         -- Thrust should be directly opposite to ship's facing direction
         local thrust_angle = (ship.angle + 90) % 360
         local rad = math.rad(thrust_angle)
@@ -433,6 +531,7 @@ function Fspace:update_bullets()
 end
 
 function Fspace:collide_ship_with_rocks()
+
     local rock_number_collision_threshold = 50
     if #rocks > rock_number_collision_threshold then
         return
@@ -462,6 +561,11 @@ function Fspace:collide_ship_with_rocks()
                 
                 if not (ship_max_x < rock_min_x or ship_min_x > rock_max_x or ship_max_y < rock_min_y or ship_min_y > rock_max_y) then
                     rock.collision_time = love.timer.getTime()
+
+                    explosion_sound:stop()
+                    explosion_sound:play()
+
+
                     -- decrease ship life on collision
                     ship.life = ship.life - 5
                     if ship.life < 0 then ship.life = 0 end
@@ -495,6 +599,7 @@ function Fspace:collide_ship_with_rocks()
 end
 
 function Fspace:collide_ship_with_mines()
+
     if #mines > 20 then
         return
     end
@@ -529,6 +634,10 @@ function Fspace:collide_ship_with_mines()
                 
                 if not (ship_max_x < mine_min_x or ship_min_x > mine_max_x or ship_max_y < mine_min_y or ship_min_y > mine_max_y) then
                     m.collision_time = love.timer.getTime()
+
+                    explosion_sound:stop()
+                    explosion_sound:play()
+
                     -- destroy mine on collision and decrease ship life
                     table.remove(mines, i)
                     ship.mine_collision_time = love.timer.getTime()
@@ -540,49 +649,7 @@ function Fspace:collide_ship_with_mines()
     end    
 end
 
-function Fspace:collide_bullets_with_rocks()
-    local rock_number_collision_threshold = 50
-    
-    -- collision detection bullets and rocks (AABB)
-    for _, rock in ipairs(rocks) do    
-        for bi = #bullets, 1, -1 do
-            local bullet = bullets[bi]
-            local bx, by = bullet.x, bullet.y
-            local rock_min_x, rock_min_y, rock_max_x, rock_max_y = rock:get_bound_rect()
-            rock_min_x = rock_min_x + rock.x
-            rock_min_y = rock_min_y + rock.y
-            rock_max_x = rock_max_x + rock.x
-            rock_max_y = rock_max_y + rock.y
-            
-            if bx >= rock_min_x and bx <= rock_max_x and by >= rock_min_y and by <= rock_max_y then
-                -- Bullet hit rock: remove bullet, split rock
-                table.remove(bullets, bi)
-                rock.collision_time = love.timer.getTime()
 
-                -- Optionally spawn a mine 
-                if #mines < 20 and math.random() < 0.05 then
-                    local mine = Mine.new(rock.x, rock.y, rock.angle)
-                    table.insert(mines, mine)
-                end
-
-                -- Optionally spawn smaller rocks
-                if rock.scale > 0.2 and #rocks < rock_number_collision_threshold then         
-                    for i = 1, 2 do
-                        local angle = math.random() * 2 * math.pi
-                        local newrock = Rock.new(rock.x, rock.y, math.deg(angle))
-                        newrock.scale = rock.scale * 0.7
-                        newrock.dx = math.cos(angle) * 2
-                        newrock.dy = math.sin(angle) * 2
-                        newrock.dr = (math.random() - 0.5) * 4
-                        table.insert(rocks, newrock)
-                    end
-                end
-                table.remove(rocks, _)
-                break
-            end
-        end    
-    end
-end
 
 function Fspace:collide_bullets_with_rocks()
     local rock_number_collision_threshold = 50
@@ -599,6 +666,10 @@ function Fspace:collide_bullets_with_rocks()
             rock_max_y = rock_max_y + rock.y
             
             if bx >= rock_min_x and bx <= rock_max_x and by >= rock_min_y and by <= rock_max_y then
+
+                explosion_sound:stop()
+                explosion_sound:play()
+
                 -- Bullet hit rock: remove bullet, split rock
                 table.remove(bullets, bi)
                 rock.collision_time = love.timer.getTime()
@@ -648,6 +719,10 @@ function Fspace:collide_bullets_with_mines()
             mine_max_y = mine_max_y + mine.y
             
             if bx >= mine_min_x and bx <= mine_max_x and by >= mine_min_y and by <= mine_max_y then
+
+                explosion_sound:stop()
+                explosion_sound:play()
+
                 -- Bullet hit mine: remove both
                 table.remove(bullets, bi)
                 table.remove(mines, mi)
@@ -693,6 +768,10 @@ function Fspace:collide_ship_with_boxes()
                 if not (ship_max_x < box_min_x or ship_min_x > box_max_x or ship_max_y < box_min_y or ship_min_y > box_max_y) then
                     b.collision_time = love.timer.getTime()
                     -- destroy box on collision and decrease ship life
+
+                    explosion_sound:stop()
+                    explosion_sound:play()
+
                     table.remove(boxes, i)
                     ship.box_collision_time = love.timer.getTime()
                     ship.weapon_level = ( ship.weapon_level + 1 ) % ( ship.max_weapon_level + 1 )
@@ -717,6 +796,10 @@ function Fspace:collide_bullets_with_boxes()
             box_max_y = box_max_y + box.y
             
             if bx >= box_min_x and bx <= box_max_x and by >= box_min_y and by <= box_max_y then
+
+                explosion_sound:stop()
+                explosion_sound:play()
+
                 -- Bullet hit box: remove both
                 table.remove(bullets, bii)
                 table.remove(boxes, bi)
@@ -785,7 +868,7 @@ function Fspace:update(dt)
     elseif current_update_category == UPDATE_CATEGORIES.COLLISION then
         self:collide_ship_with_rocks()
         self:collide_ship_with_mines()
-        self:collide_ship_with_boxes()
+        self:collide_ship_with_boxes() 
         self:collide_bullets_with_rocks()
         self:collide_bullets_with_mines()
         self:collide_bullets_with_boxes()
