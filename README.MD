@@ -12,6 +12,15 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 
 ## Feature Suggestions
 - [x] present drops that provide weapons upgrade
+
+- more npcs (rocks are an npc)
+   - alien ship will move with a nudger that has a nudge frequency
+   - the nudge will have a force and direction 
+   - the force and direction will be determined by the alien ship mode
+   - some nudge_modes are chase, random, pattern00, pattern01 ...
+   - alien ship will have a nudge_mode_change_frequency, and or nuge_mode_triggers
+
+   
 - rotational thrust (using thrusters to turn)
 - ship damage with damage shown by ship animation and or health bar
 - bomb weapon which is slower, does nothing until explodes then has radius damage
@@ -25,7 +34,7 @@ This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 - bouncy walls
 - sound
 - screensaver / autopilot mode
-- more npcs (rocks are an npc)
+
 - waves or stages
 
 - multiplayer

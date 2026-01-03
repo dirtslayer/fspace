@@ -29,7 +29,7 @@ function love.load()
     love.window.setTitle("fspace")
 
     scenery:load()
-
+    print("Welcome to fspace!")
 end
 
 function love.update(dt)
