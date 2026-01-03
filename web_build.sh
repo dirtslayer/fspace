@@ -5,4 +5,4 @@
 
 nvm use 20
 npm install -g love.js
-love.js . docs -c --title 'fspace'
+love.js . docs -c --title 'fspace' --memory 67108864
