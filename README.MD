@@ -5,6 +5,10 @@
 
 This is a Love2d hello-world gone wild inspired by Omega Race and Asteroids
 
+## fspace online
+
+https://dirtslayer.github.io/fspace/
+
 ## todo
 
 - deploy to android
